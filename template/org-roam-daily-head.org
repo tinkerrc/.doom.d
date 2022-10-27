@@ -1,0 +1,11 @@
+#+title: %<%Y-%m-%d>
+#+roam_tags: daily
+#+setupfile: ../setup.org
+
+- brief ::
+- weather ::
+
+* Daily Plan
+* Logs
+* Journal
+* Review

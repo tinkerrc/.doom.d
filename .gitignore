@@ -1,0 +1,5 @@
+new
+orig
+secrets.el
+*.old.*
+config.el

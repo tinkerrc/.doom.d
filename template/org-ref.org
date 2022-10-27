@@ -1,0 +1,13 @@
+* %t (%y)
+:PROPERTIES:
+:CUSTOM_ID: %k
+:NOTER_DOCUMENT: %F
+:ROAM_KEY: cite:%k
+:AUTHOR: %9a
+:JOURNAL: %j
+:YEAR: %y
+:VOLUME: %v
+:PAGES: %p
+:DOI: %D
+:URL: %U
+:END:

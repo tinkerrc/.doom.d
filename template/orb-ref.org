@@ -1,0 +1,26 @@
+:PROPERTIES:
+:ROAM_REFS: ${ref}
+:END:
+#+title: ${title} (${author-or-editor})
+#+setupfile: ./setup.org
+#+filetags: :ref:
+
+- category ::
+- context ::
+- status ::
+- duration ::
+- author ::
+- brief ::
+- highlight ::
+- ideas ::
+- rating :: -/10
+
+* Review
+* Notes
+:PROPERTIES:
+:CUSTOM_ID: ${=key=}
+:URL: ${url}
+:AUTHOR: ${author-or-editor}
+:NOTER_DOCUMENT: %(orb-process-file-field \"${=key=}\")
+:NOTER_PAGE:
+:END:

@@ -1,0 +1,5 @@
+#+title: $1
+#+roam_tags:
+#+setupfile: ./setup.org
+
+$0

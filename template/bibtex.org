@@ -1,0 +1,18 @@
+#+title: ${title} (${author-or-editor})
+#+roam_tags: ref
+#+roam_key: cite:${=key=}
+#+setupfile: ./setup.org
+
+- context ::
+
+* ${title}
+:PROPERTIES:
+:CUSTOM_ID: ${=key=}
+:NOTER_DOCUMENT: %(orb-process-file-field \"${=key=}\")
+:AUTHOR: ${author-abbrev}
+:JOURNAL: ${journaltitle}
+:DATE: ${date}
+:YEAR: ${year}
+:DOI: ${doi}
+:URL: ${url}
+:END:

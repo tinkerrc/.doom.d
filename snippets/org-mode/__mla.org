@@ -1,0 +1,16 @@
+#+OPTIONS: toc:nil
+#+LATEX_CLASS_OPTIONS: [12pt,letterpaper]
+#+LATEX_HEADER: \usepackage{mla}
+#+LATEX_HEADER: \usepackage{indentfirst}
+#+LATEX_HEADER: \usepackage[american]{babel}
+#+LATEX_HEADER: \usepackage{csquotes}
+#+LATEX_HEADER: \usepackage[style=mla]{biblatex}
+#+LATEX_HEADER: \addbibresource{\string~/org/library.bib}
+#+LATEX: \setlength{\parindent}{0.5in}
+#+LATEX: \begin{mla}{Zhenkai}{Weng}{${1:Instructor}}{${2:Class}}{${3:`(format-time-string "%e %b %y")`}}{${4:Title}}
+
+$0
+
+#+LATEX: \clearpage
+#+LATEX: \printbibliography
+#+LATEX: \end{mla}
