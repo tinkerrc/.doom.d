@@ -1,5 +1,9 @@
 new
 orig
-secrets.el
 *.old.*
+*.bak
+
+secrets.el
 config.el
+init.el
+packages.el
