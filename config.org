@@ -170,6 +170,7 @@ rgb                            ; creating color strings
 ;;tmux                         ; an API for interacting with tmux
 tree-sitter                    ; syntax and parsing, sitting in a tree...
 ;;upload                       ; map local to remote projects via ssh/ftp
+biblio
 #+end_src
 ** =:os=
 #+name: doom-os
@@ -219,7 +220,7 @@ emacs-lisp                     ; drown in parentheses
 ;;nix                          ; I hereby declare "nix geht mehr!"
 ;;ocaml                        ; an objective camel
 (org +pretty +dragndrop +journal +roam2 +pomodoro +journal +hugo +gnuplot) ; organize your plain life in plain text
-;;php                          ; perl's insecure younger brother
+php                            ; perl's insecure younger brother
 ;;plantuml                     ; diagrams for confusing people more
 ;;purescript                   ; javascript, but functional
 (python +lsp +tree-sitter +pyright) ; beautiful is better than ugly
@@ -232,7 +233,7 @@ emacs-lisp                     ; drown in parentheses
 (rust +lsp)                    ; Fe2O3.unwrap().unwrap().unwrap().unwrap()
 ;;scala                        ; java, but good
 ;;scheme                       ; a fully conniving family of lisps
-(sh +lsp +fish)                ; she sells {ba,z,fi}sh shells on the C xor
+(sh +lsp +fish +powershell)    ; she sells {ba,z,fi}sh shells on the C xor
 ;;sml
 ;;solidity                     ; do you need a blockchain? No.
 ;;swift                        ; who asked for emoji variables?
@@ -284,15 +285,20 @@ The =packages.el= file allows you to install external packages from MELPA or fro
 (package! ssh-config-mode)
 (package! protobuf-mode)
 (package! vimrc-mode)
+(package! ldap-mode)
+(package! visual-basic-mode
+  :recipe (:local-repo "visual-basic-mode.el"))
 #+end_src
 ** Org-mode Related
 #+name: doom-pkgs-org
 #+begin_src elisp :tangle no
 (unpin! org-mode)
+(unpin! org-roam)
 (package! org-super-agenda)
+(package! org-edna)
 (package! org-gcal)
-(package! org-roam)
-(package! org-roam-server)
+;; (package! org-roam)
+(package! org-roam-ui)
 (package! org-roam-bibtex)
 (package! org-transclusion
   :recipe (:host github :repo "nobiot/org-transclusion"))
@@ -311,6 +317,7 @@ The =packages.el= file allows you to install external packages from MELPA or fro
 (package! org-analyzer)
 (package! org-fancy-priorities)
 (package! org-tanglesync)
+(package! ob-mermaid)
 #+end_src
 ** Miscellaneous
 #+name: doom-pkgs-misc
@@ -411,6 +418,12 @@ I find it to be more ergonomic than =SPC b S=
 (define-key evil-motion-state-map (kbd "<remap> <evil-next-line>") 'evil-next-visual-line)
 (define-key evil-motion-state-map (kbd "<remap> <evil-previous-line>") 'evil-previous-visual-line)
 #+end_src
+** Evil: use isearch
+[[https://github.com/doomemacs/doomemacs/issues/6478#issuecomment-1219582005][doomemacs/doomemacs#6478 workaround]]
+#+begin_src emacs-lisp :tangle no
+(after! evil
+  (evil-select-search-module 'evil-search-module 'isearch))
+#+end_src
 ** Splitting
 Make it more vim-like
 #+begin_src emacs-lisp :tangle yes
@@ -443,7 +456,7 @@ Although white identifiers are weird, Nord's palette looks pretty nice on Org-mo
 I had to load the theme here so that I can override certain faces later.
 #+begin_src emacs-lisp :tangle yes
 (setq doom-theme 'doom-nord
-     doom-themes-treemacs-theme "doom-colors")
+      doom-themes-treemacs-theme "doom-colors")
 (load-theme doom-theme t)
 #+end_src
 ** Modeline
@@ -512,6 +525,7 @@ I wish all special buffers could use square brackets instead of asterisks.
 **** =use-package!=
 #+begin_src emacs-lisp :tangle yes
 (use-package! org
+  :hook (org-mode . org-edna-mode)
   :init
   (setq org-directory "~/org")
   (defun org-file (filename)
@@ -546,20 +560,23 @@ I wish all special buffers could use square brackets instead of asterisks.
 Generic org options.
 #+name: org-options
 #+begin_src emacs-lisp :tangle no
-(setq-default org-download-image-dir (org-file "static/"))
+(setq-default org-download-image-dir (org-file "assets/img/"))
 (setq org-attach-preferred-new-method 'dir
-      org-attach-directory (org-file "static/")
+      org-todo-repeat-to-state "NEXT"
+      org-attach-directory (org-file "assets/img/")
+      org-latex-create-formula-image-program 'dvisvgm
       org-blank-before-new-entry '((heading . nil) (plain-list-item . nil))
       org-catch-invisible-edits 'error
       org-ellipsis " ▼"
       org-export-exclude-tags '("noexport" "crypt" "priv")
-      org-hide-emphasis-markers t
+      org-hide-emphasis-markers nil ; don't hide, makes editing easier
       org-priority-lowest 68
       org-default-priority 67
       org-image-actual-width '(400)
       org-download-image-attr-list '("#+attr_org: :width 400px")
       org-src-tab-acts-natively t
-      org-src-window-setup 'current-window
+      org-src-window-setup 'current-window ; https://github.com/doomemacs/doomemacs/issues/6478#issuecomment-1293544664
+      org-fold-core-style 'overlays
       org-superstar-item-bullet-alist '((42 . 8226)
                                         (45 . 10148)
                                         (43 . 9671)))
@@ -575,7 +592,8 @@ Generic org options.
 (set-face-attribute 'highlight nil :foreground "#ffffff" :background "#678399" :underline "#a4ccf5")
 (set-face-foreground 'org-list-dt "#88c0d0")
 (set-face-attribute 'org-link nil :foreground 'unspecified :background "#445766" :underline "#96bbe0" :inherit 'unspecified)
-(set-face-foreground 'org-document-title "#e5e9f0")
+(when (eq doom-theme 'doom-nord)
+  (set-face-foreground 'org-document-title "#e5e9f0"))
 (set-face-foreground 'org-document-info-keyword "#78808f")
 (set-face-foreground 'org-agenda-structure "#d08770")
 (set-face-foreground 'org-agenda-date-today "#b48ead")
@@ -597,14 +615,15 @@ Generic org options.
 ***** Heading
 #+name: org-faces-heading
 #+begin_src emacs-lisp :tangle no
-(set-face-foreground 'org-level-1 "#e6e9f0")
-(set-face-foreground 'org-level-2 "#a6e6ff")
-(set-face-foreground 'org-level-3 "#8f9cf2")
-(set-face-foreground 'org-level-4 "#85b6f2")
-(set-face-foreground 'org-level-5 "#eceff4")
-(set-face-foreground 'org-level-6 "#aebf61")
-(set-face-foreground 'org-level-7 "#deafd5")
-(set-face-foreground 'org-level-8 "#e6987c")
+(when (eq doom-theme 'doom-nord)
+  (set-face-foreground 'org-level-1 "#e6e9f0")
+  (set-face-foreground 'org-level-2 "#a6e6ff")
+  (set-face-foreground 'org-level-3 "#8f9cf2")
+  (set-face-foreground 'org-level-4 "#85b6f2")
+  (set-face-foreground 'org-level-5 "#eceff4")
+  (set-face-foreground 'org-level-6 "#aebf61")
+  (set-face-foreground 'org-level-7 "#deafd5")
+  (set-face-foreground 'org-level-8 "#e6987c"))
 #+end_src
 ***** To-do keywords
 Faces for my custom TODO keywords
@@ -627,14 +646,15 @@ Faces for my custom TODO keywords
 Use Nord colors for org-habit
 #+name: org-faces-habit
 #+begin_src emacs-lisp :tangle no
-(set-face-background 'org-habit-alert-face "#DEC381")
-(set-face-background 'org-habit-ready-face "#A3BE8C")
-(set-face-background 'org-habit-clear-face "#8FBCBB")
-(set-face-background 'org-habit-overdue-face "#BF616A")
-(set-face-background 'org-habit-alert-future-face "#B59E6E")
+(require 'org-habit)
+(set-face-background 'org-habit-alert-face "#dec381")
+(set-face-background 'org-habit-ready-face "#a3be8c")
+(set-face-background 'org-habit-clear-face "#8fbcbb")
+(set-face-background 'org-habit-overdue-face "#bf616a")
+(set-face-background 'org-habit-alert-future-face "#b59e6e")
 (set-face-background 'org-habit-ready-future-face "#839970")
-(set-face-background 'org-habit-clear-future-face "#769C9B")
-(set-face-background 'org-habit-overdue-future-face "#8F4C52")
+(set-face-background 'org-habit-clear-future-face "#769c9b")
+(set-face-background 'org-habit-overdue-future-face "#8f4c52")
 #+end_src
 **** Ligatures
 #+name: org-ligatures
@@ -676,8 +696,12 @@ Use Nord colors for org-habit
 (require 'org-download)
 ;; HACK: get around doom emacs #3172
 ;;(defun ad-Advice-newline-and-indent (&rest _)   (org-newline-and-indent))
+
+;; File templates
 (set-file-template! "/.*\\.org$" :trigger "__file.org" :mode 'org-mode)
 (set-file-template! "/re/dev/phi001/paper.*\\.org$" :trigger "__mla.org" :mode 'org-mode)
+
+;; LaTeX options
 (setq org-format-latex-options
       '(:foreground default :background default :html-foreground "Black" :html-background "Transparent" :html-scale 1.0 :matchers
         ("begin" "$1" "$" "$$" "\\(" "\\[")))
@@ -688,9 +712,9 @@ Use Nord colors for org-habit
                              "%latex -shell-escape -interaction nonstopmode -output-directory %o %f")
       ;;org-cite-export-processors '((t biblatex))
       )
-(let ((dvipng--plist (alist-get 'dvipng org-preview-latex-process-alist)))
-  (plist-put dvipng--plist :use-xcolor t)
-  (plist-put dvipng--plist :image-converter '("dvipng -D %D -T tight -bg 'rgb 0.18 0.204 0.251' -o %O %f")))
+;; (let ((dvipng--plist (alist-get 'dvipng org-preview-latex-process-alist)))
+;;   (plist-put dvipng--plist :use-xcolor t)
+;;   (plist-put dvipng--plist :image-converter '("dvipng -D %D -T tight -bg 'rgb 0.18 0.204 0.251' -o %O %f")))
 #+end_src
 **** GTD & Org Agenda
 #+name: org-gtd
@@ -699,7 +723,6 @@ Use Nord colors for org-habit
 <<agenda-options>>
 <<agenda-groups>>
 <<agenda-commands>>
-(require 'org-depend)
 #+end_src
 ***** Options
 I assign an empty keymap to =org-super-agenda-header-map= so that I can use j/k on super-agenda section headers.
@@ -779,10 +802,10 @@ I assign an empty keymap to =org-super-agenda-header-map= so that I can use j/k 
         (:name "Low Priority"
          :and (:todo "NEXT"
                :priority "D"))
-        (:name "Projects"
+        (:name "Idle Projects"
          :todo "PROJ")
-        (:name "Someday"
-         :not (:tag "inbox"))
+        ;; (:name "Someday"
+        ;;  :not (:tag "inbox"))
         (:discard (:anything t))))
       #+end_src
 ***** Commands
@@ -972,7 +995,7 @@ javascript:location.href = 'org-protocol://capture?template=l&url=' + encodeURIC
       :desc "Next Heading"              :n "g j"        #'outline-next-heading
 
       :leader
-      :desc "Capture"         :ni "J" #'org-capture
+      :desc "Capture"         :ni "j" #'org-capture
 
       (:prefix ("a" . "agenda")
        :desc "Agenda (Log)"    :ni "a" (cmd! (find-file-noselect (org-file "todo.org"))
@@ -999,38 +1022,51 @@ javascript:location.href = 'org-protocol://capture?template=l&url=' + encodeURIC
        :desc "Go to GCal"      :ni "g" (cmd! (find-file (org-file "gcal.org"))))
 
       :localleader
-      :desc "Start Depend Chain"          :ni "-"       (cmd! (save-excursion
-                                                                (condition-case nil (while (not (string= (nth 2 (org-heading-components)) "PROJ"))
-                                                                                      (org-up-element))
-                                                                  (user-error "No project heading found"))
-                                                                (if (not (org-goto-first-child))
-                                                                         (user-error "Project has no child task"))
-                                                                (let ((last-point (point)))
-                                                                  (while (and (or (string= (nth 2 (org-heading-components)) "DONE")
-                                                                                  (string= (nth 2 (org-heading-components)) "KILL"))
-                                                                              (outline-get-next-sibling))
-                                                                    (setq last-point (point)))
-                                                                  (goto-char last-point))
-                                                                  (if (or (eq nil (nth 2 (org-heading-components)))
-                                                                          (not (org-at-heading-p)))
-                                                                      (user-error "No valid candidate for start-of-chain found"))
-                                                                  (if (string= (nth 2 (org-heading-components)) "TODO")
-                                                                      (org-todo "NEXT"))
-                                                                  (org-set-property "TRIGGER" "chain-find-next(NEXT)")))
+      :desc "Start Project Chain"         :ni "-"       #'my/org-start-project-chain
+      :desc "Extract Org link"            :ni "ly"      #'my/org-extract-link
+      :desc "Copy Org ID"                 :ni "li"      (cmd! (kill-new (org-id-get nil t)))
+      :desc "Toggle Timestamp Range Type" :ni "x"       #'my/org-toggle-range-format)
 
-      :desc "Extract Org link"            :ni "ly"      #'org-extract-link
-      :desc "Copy Org Id"                 :ni "li"      (cmd! (kill-new (org-id-get nil t)))
-      :desc "Toggle Timestamp Range Type" :ni "x"       (cmd! (save-excursion
-                                                                (evil-beginning-of-line)
-                                                                (org-toggle-timestamp-type)
-                                                                (ignore-errors (evil-snipe-f 1 "<")
-                                                                               (evil-snipe-f 1 "["))
-                                                                (org-toggle-timestamp-type))))
 (map! :after evil-org-agenda
       :map evil-org-agenda-mode-map
       :m "gs" nil)
 
-(defun org-extract-link ()
+(defun my/org-entry-at-point-active-p ()
+  "Check if the org entry at point is an active TODO entry. Returns nil if not at a heading."
+  (and (org-at-heading-p)
+       (org-entry-is-todo-p)))
+
+(defun my/org-start-project-chain ()
+  "Set the first TODO of the closest parent project to NEXT and set up the TRIGGER property"
+  (interactive)
+  (save-excursion
+    (condition-case nil (while (not (string= (nth 2 (org-heading-components)) "PROJ"))
+                          (org-up-element))
+      (user-error "No project heading found"))
+    (if (not (org-goto-first-child))
+        (user-error "Add a child task to project first"))
+    (let ((last-point (point)))
+      (while (and (not (my/org-entry-at-point-active-p))
+                  (outline-get-next-sibling))
+        (setq last-point (point)))
+      (goto-char last-point))
+    (if (not (my/org-entry-at-point-active-p))
+        (user-error "No valid candidate for start-of-chain found"))
+    (if (string= (nth 2 (org-heading-components)) "TODO")
+        (org-todo "NEXT"))
+    (org-set-property "TRIGGER" "next-sibling(todo-only) todo!(NEXT) chain!(\"TRIGGER\")")))
+
+(defun my/org-toggle-range-format ()
+  "Time range variant of org-toggle-timestamp-type"
+  (interactive)
+  (save-excursion
+    (evil-beginning-of-line)
+    (org-toggle-timestamp-type)
+    (ignore-errors (evil-snipe-f 1 "<")
+                   (evil-snipe-f 1 "["))
+    (org-toggle-timestamp-type)))
+
+(defun my/org-extract-link ()
   "Extract the link location at point and put it on the killring."
   ;; from https://orgmode.org/list/87oc1ozqzu.fsf@mean.albasani.net/
   (interactive)
@@ -1040,9 +1076,10 @@ javascript:location.href = 'org-protocol://capture?template=l&url=' + encodeURIC
 **** Org Export: Hugo
 #+begin_src emacs-lisp :tangle yes
 (use-package! ox-hugo
+  :after ox
   :config
   (setq org-hugo-section "blog")
-  (setq-default org-hugo-default-static-subdirectory-for-externals "static/images")
+  ;; (setq-default org-hugo-default-static-subdirectory-for-externals "static/images")
   (defun my/org-export-filter-roam-metadata (text backend _info)
     (if (and (eq backend 'hugo)
              (or (string-match "\\`[tT]ags\n:" text)
@@ -1065,6 +1102,7 @@ javascript:location.href = 'org-protocol://capture?template=l&url=' + encodeURIC
   (org-babel-do-load-languages
    'org-babel-load-languages
    '((R . t)
+     (mermaid . t)
      (latex . t))))
 #+end_src
 **** Animate inline GIFs
@@ -1154,6 +1192,13 @@ roam-block seems interesting as well.
   ;;(set-face-attribute 'om/highlighter nil :foreground 'unspecified :background "#445766" :underline "#96bbe0" :inherit 'unspecified)
   )
 #+end_src
+**** Package: ob-mermaid
+#+begin_src emacs-lisp :tangle yes
+(use-package! ob-mermaid
+  :after org
+  :config
+  (setq ob-mermaid-cli-path "/usr/bin/mmdc"))
+#+end_src
 *** Org Roam
 **** =use-package!=
 #+begin_src emacs-lisp :tangle yes
@@ -1167,10 +1212,10 @@ roam-block seems interesting as well.
     (file-relative-name (org-roam-link--get-file-from-title title) org-roam-directory))
   <<org-roam-map>>
   :config
-  ;;(require 'org-roam-protocol)
   <<org-roam-options>>
   <<org-roam-faces>>
   <<org-roam-capture-templates>>
+  ;;(require 'org-roam-protocol)
   )
 #+end_src
 **** Keybindings
@@ -1193,7 +1238,6 @@ roam-block seems interesting as well.
       (:prefix ("r" . "org-roam")
        :desc "Buffer"                           :ni  "<tab>"    #'org-roam-buffer-toggle
        :desc "Find Node"                        :ni  "/"        #'org-roam-node-find
-       :desc "Find Node No-select"              :ni  "?"        #'org-roam-node-find-noselect
        :desc "Go to Random Note"                :ni  ","        #'org-roam-node-random
        :desc "New Note"                         :ni  "n"        #'org-roam-capture
        :desc "Go to calendar"                   :ni  "c"        (find-org-file! "cal.org")
@@ -1302,13 +1346,10 @@ Custom functions that are bound to ~org-roam-mode-map~:
 <<org-roam-dailies-dateutil>>
 ; TODO: adapt to org-roam v2
 (setq org-roam-capture-templates
-      `(,(make-roam-template "Topic" :after "* ${title}\n%?")
+      `(,(make-roam-template "Default" :tags "" :key "d")
         ,(make-roam-template "Concept" :after "* Definition: ${title}\n%?" :setup "./setup-concept.org")
-        ,(make-roam-template "Blog Post" :tags "blog")
         ,(make-roam-template "Person" :after "* Biography: ${title}\n%?")
-        ,(make-roam-template "Custom" :tags "" :key "u")
-        ,(make-roam-template "Project" :key "P" :fn "proj-${slug}" :cats '("Project"))
-        ("r" "ref" plain "%?"
+        ("r" "Reference" plain "%?"
          :target (file+head "%<%Y%m%d%H%M%S>-${=key=}.org" ,(get-org-template "orb-ref"))
          :unnarrowed t))
       org-roam-capture-ref-templates
@@ -1375,7 +1416,6 @@ Custom functions that are bound to ~org-roam-mode-map~:
 Helper function for template creation
 #+name: org-roam-template-helper
 #+begin_src emacs-lisp :tangle no
-; TODO: migrate to roam v2
 (defun concat-nl (&rest lines)
   "concat LINES but add \n at the end of each element"
   (let (result)
@@ -1408,16 +1448,8 @@ Helper function for template creation
   (unless head
     (setq head
           (concat "#+title: ${title}\n"
-                  "#+roam_alias: \n"
-                  (when (string-prefix-p "Ref" desc)
-                    "#+roam_key: ${ref}\n")
-                  (when (string= desc "Post")
-                    "#+author: Zhenkai Weng\n"
-                    "#+date: %<%Y-%m-%d>\n")
-                  "#+roam_tags: " tags "\n"
-                  (when (string= desc "Post")
-                    "#+hugo_tags: \n")
                   "#+setupfile: " setup "\n"
+                  "#+filetags: " tags "\n"
                   "\n"))
     (if (eq metadata 'add)
         (setq head (concat head
@@ -1552,24 +1584,25 @@ Put this in =org-roam-directory/.dir-locals.el= to auto-export files that has th
 #+begin_src emacs-lisp :tangle no
 ((org-mode . ((eval . (when (save-excursion
                                 (goto-char (point-min))
-                                (re-search-forward "#\\+roam_tags:.*blog" nil t))
+                                (re-search-forward "#\\+filetags:.*blog" nil t))
                         (org-hugo-auto-export-mode))))))
 #+end_src
-**** Graph Server
-#+begin_src emacs-lisp :tangle no
-; TODO: adapt to org-roam v2
-(use-package! org-roam-server
-  :init
-  (setq org-roam-server-host "127.0.0.1"
-        org-roam-server-port 9000
-        org-roam-server-export-inline-images t
-        org-roam-server-authenticate nil
-        org-roam-server-network-poll t
-        org-roam-server-network-arrows nil
-        org-roam-server-network-label-truncate t
-        org-roam-server-network-label-truncate-length 60
-        org-roam-server-network-label-wrap-length 20)
-  (org-roam-server-mode))
+**** Org Roam UI
+#+begin_src emacs-lisp :tangle yes
+(use-package! websocket
+  ;; :after org-roam
+  )
+(use-package! org-roam-ui
+  ;; neither are working
+  ;; :after websocket
+  ;; :hook (after-init . org-roam-ui-mode)
+  :config
+  (setq org-roam-ui-sync-theme t
+        org-roam-ui-follow t
+        org-roam-ui-update-on-save t
+        org-roam-ui-open-on-start t))
+;; have to do it manually
+(org-roam-ui-mode)
 #+end_src
 **** TODO Delve
 #+begin_src emacs-lisp :tangle yes
@@ -2021,7 +2054,7 @@ Prevent meghanada bindings from shadowing ~org-edit-src-exit~ (=C-c C-c=).
 (setq confirm-kill-processes nil
       display-line-numbers-type 'visual
       large-file-warning-threshold nil
-      projectile-project-search-path '("~/re/dev")
+      projectile-project-search-path '("~/re/dev" "~/x")
       calendar-date-style 'iso)
 #+end_src
 * Credits

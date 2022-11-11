@@ -8,12 +8,7 @@
 - category ::
 - context ::
 - status ::
-- duration ::
 - author ::
-- brief ::
-- highlight ::
-- ideas ::
-- rating :: -/10
 
 * Review
 * Notes
