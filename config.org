@@ -449,8 +449,8 @@ I had to load the theme here so that I can override certain faces later.
 ** Modeline
 #+begin_src emacs-lisp :tangle yes
 ;; Get thin modeline (HiDPI)
-;;(set-face-attribute 'mode-line nil :height 87)
-;;(set-face-attribute 'mode-line-inactive nil :height 87)
+(set-face-attribute 'mode-line nil :height 87)
+(set-face-attribute 'mode-line-inactive nil :height 87)
 
 ;; Icons are nice
 (setq doom-modeline-major-mode-icon t
