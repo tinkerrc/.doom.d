@@ -1004,7 +1004,7 @@ javascript:location.href = 'org-protocol://capture?template=l&url=' + encodeURIC
       :leader
       :desc "Capture"         :ni "j" #'org-capture
 
-      (:prefix ("a" . "agenda")
+      (:prefix ("d" . "agenda")
        :desc "Agenda (Log)"    :ni "a" (cmd! (find-file-noselect (org-file "todo.org"))
                                              (org-agenda nil "a")
                                              (org-agenda-archives-mode t)
@@ -1226,21 +1226,22 @@ roam-block seems interesting as well.
   )
 #+end_src
 **** Keybindings
+
 #+name: org-roam-map
 #+begin_src elisp :tangle no
 <<org-roam-map-custom-fn>>
 (map! :map org-roam-mode-map
       :leader
-      (:prefix ("d" . "org-roam-dailies")
-       :desc "Find Yesterday"                   :ni  "y"        #'org-roam-dailies-find-yesterday
-       :desc "Find Today"                       :ni  "j"        #'org-roam-dailies-find-today
-       :desc "Find Tomorrow"                    :ni  "k"        #'org-roam-dailies-find-tomorrow
-       :desc "Find Date"                        :ni  "d"        #'org-roam-dailies-find-date
+      ;; (:prefix ("d" . "org-roam-dailies")
+      ;;  :desc "Find Yesterday"                   :ni  "y"        #'org-roam-dailies-find-yesterday
+      ;;  :desc "Find Today"                       :ni  "j"        #'org-roam-dailies-find-today
+      ;;  :desc "Find Tomorrow"                    :ni  "k"        #'org-roam-dailies-find-tomorrow
+      ;;  :desc "Find Date"                        :ni  "d"        #'org-roam-dailies-find-date
 
-       :desc "Capture Yesterday"                :ni  "Y"        #'org-roam-dailies-capture-yesterday
-       :desc "Capture Today"                    :ni  "i"        #'org-roam-dailies-capture-today
-       :desc "Capture Tomorrow"                 :ni  "I"        #'org-roam-dailies-capture-tomorrow
-       :desc "Capture Date"                     :ni  "D"        #'org-roam-dailies-capture-date)
+      ;;  :desc "Capture Yesterday"                :ni  "Y"        #'org-roam-dailies-capture-yesterday
+      ;;  :desc "Capture Today"                    :ni  "i"        #'org-roam-dailies-capture-today
+      ;;  :desc "Capture Tomorrow"                 :ni  "I"        #'org-roam-dailies-capture-tomorrow
+      ;;  :desc "Capture Date"                     :ni  "D"        #'org-roam-dailies-capture-date)
 
       (:prefix ("r" . "org-roam")
        :desc "Buffer"                           :ni  "<tab>"    #'org-roam-buffer-toggle
@@ -1257,7 +1258,7 @@ roam-block seems interesting as well.
        :desc "Find Literature Note"             :nvi "b"        (cmd! (let ((ivy-bibtex-default-action 'ivy-bibtex-edit-notes)) (ivy-bibtex)))
        :desc "ORB Note Actions"                 :ni  "B"        #'orb-note-actions
        :desc "Open PDF"                         :ni  "p"        (cmd! (let ((ivy-bibtex-default-action 'ivy-bibtex-open-pdf)) (ivy-bibtex)))
-       :desc "Insert Citation"                  :ni  "I"        #'org-ref-cite-insert-ivy
+       :desc "Insert Citation"                  :ni  "I"        #'citar-insert-citation
 
        ;; (:prefix ("t" . "Transclusion")
        ;;  :desc "Transclude"                      :ni  "t"        #'org-transclusion-link-open-at-point
@@ -1343,7 +1344,7 @@ Custom functions that are bound to ~org-roam-mode-map~:
 ;(set-face-attribute 'org-roam-link-invalid nil :foreground 'unspecified :background "#592e33" :underline "#BF616A" :inherit 'unspecified)
 ;(set-face-attribute 'org-roam-link-shielded nil :foreground 'unspecified :background "#736344" :underline "#EBCB8B" :inherit 'unspecified)
 
-(require 'org-ref)
+;;(require 'org-ref)
 ;;(set-face-attribute 'org-ref-cite-face nil :foreground 'unspecified :background "#736344" :underline "#EBCB8B" :inherit 'unspecified)
 #+end_src
 **** Capture Templates
@@ -1515,7 +1516,7 @@ Time/date utilities (borrowed from [[https://emacs.stackexchange.com/questions/4
             (format-time-string "%F Sun" (current-week-end))
             "]")))
 #+end_src
-**** Note-taking
+**** Bibliography
 =org-roam-bibtex= enables bibliographical notes (see [[file:template/orb-ref.org][note template]]).
 #+begin_src emacs-lisp :tangle yes
 (use-package! org-roam-bibtex
@@ -1531,7 +1532,33 @@ Time/date utilities (borrowed from [[https://emacs.stackexchange.com/questions/4
   ;;   (orb-make-notes-cache))
   )
 #+end_src
+=citar=:
+#+begin_src emacs-lisp :tangle yes
+(use-package! citar
+  :config
+  (setq citar-bibliography (org-file "library.bib")
+        ;; org-cite-global-bibliography `(,(org-file "library.bib"))
+        ;; org-cite-insert-processor 'citar
+        ;; org-cite-follow-processor 'citar
+        ;; org-cite-activate-processor 'citar
+        )
+  (setq citar-symbols
+        `((file ,(all-the-icons-faicon "file-o" :face 'all-the-icons-green :v-adjust -0.1) . " ")
+          (note ,(all-the-icons-material "speaker_notes" :face 'all-the-icons-blue :v-adjust -0.3) . " ")
+          (link ,(all-the-icons-octicon "link" :face 'all-the-icons-orange :v-adjust 0.01) . " ")))
+  (setq citar-symbol-separator " ")
+  )
+        #+end_src
 
+Open PDFs with Zathura.
+#+begin_src emacs-lisp :tangle yes
+(setq bibtex-completion-pdf-open-function
+      (lambda (file)
+        (shell-command (concat "zathura "
+                               (shell-quote-argument file)
+                               " &>/dev/null &disown"))))
+#+end_src
+**** Bibliography (old)
 =ivy-bibtex= allows me to search notes & PDF in the bibliography.
 #+begin_src emacs-lisp :tangle yes
 (use-package! ivy-bibtex
@@ -1578,15 +1605,6 @@ Time/date utilities (borrowed from [[https://emacs.stackexchange.com/questions/4
         org-noter-always-create-frame nil
         org-noter-hide-other nil
         org-noter-notes-search-path org-directory))
-#+end_src
-
-Open PDFs with Zathura.
-#+begin_src emacs-lisp :tangle yes
-(setq bibtex-completion-pdf-open-function
-      (lambda (file)
-        (shell-command (concat "zathura "
-                               (shell-quote-argument file)
-                               " &>/dev/null &disown"))))
 #+end_src
 **** Bloging
 Put this in =org-roam-directory/.dir-locals.el= to auto-export files that has the blog tag on save
