@@ -77,7 +77,8 @@ japanese
 (company +childframe)          ; the ultimate code completion backend
 ;;helm                         ; the *other* search engine for love and life
 ;;ido                          ; the other *other* search engine...
-(ivy +prescient +fuzzy +icons) ; a search engine for love and life
+;;(ivy +prescient +fuzzy +icons) ; a search engine for love and life
+(vertico +icons)
 #+end_src
 ** =:ui=
 #+name: doom-ui
@@ -294,10 +295,10 @@ The =packages.el= file allows you to install external packages from MELPA or fro
 #+begin_src elisp :tangle no
 (unpin! org-mode)
 (unpin! org-roam)
+
 (package! org-super-agenda)
 (package! org-edna)
 (package! org-gcal)
-;; (package! org-roam)
 (package! org-roam-ui)
 (package! org-roam-bibtex)
 (package! org-transclusion
@@ -307,8 +308,6 @@ The =packages.el= file allows you to install external packages from MELPA or fro
   :recipe (:host github :repo "publicimageltd/lister"))
 (package! delve
   :recipe (:host github :repo "publicimageltd/delve"))
-(package! org-ref)
-(package! ivy-bibtex)
 (package! parsebib
   :recipe
   (:files ("*.el"))) ; HACK: straight isn't building correctly somehow
@@ -318,6 +317,10 @@ The =packages.el= file allows you to install external packages from MELPA or fro
 (package! org-fancy-priorities)
 (package! org-tanglesync)
 (package! ob-mermaid)
+
+;; Citations - Ivy
+;;(package! org-ref)
+;;(package! ivy-bibtex)
 #+end_src
 ** Miscellaneous
 #+name: doom-pkgs-misc
@@ -443,7 +446,7 @@ Make it more vim-like
 - I use a large font size because of my Hi-DPI screen.
 - If unicode symbols aren't working properly, install Symbola. (Arch: ~yay -S otf-symbola~)
 #+begin_src emacs-lisp :tangle yes
-;;(setq doom-font (font-spec :name "DejaVuSansMono Nerd Font Mono" :size 15))
+(setq doom-font (font-spec :name "DejaVuSansMono Nerd Font Mono" :size 15))
 (set-face-background 'cursor "#9ac0e6")
 (add-hook 'vterm-mode-hook
           (lambda ()
@@ -732,6 +735,10 @@ I assign an empty keymap to =org-super-agenda-header-map= so that I can use j/k 
 (require 'f)
 (add-to-list 'org-tags-exclude-from-inheritance "important")
 (setq org-super-agenda-header-map (make-sparse-keymap)
+      ;; org-agenda-prefix-format '((agenda . " %i %-12:c%?-12t%-6e% s")
+      ;;                            (todo . " %i %-12:c %-6e")
+      ;;                            (tags . " %i %-12:c")
+      ;;                            (search . " %i %-12:c"))
       org-agenda-block-separator nil
       org-agenda-inhibit-startup t
       org-agenda-show-future-repeats nil
@@ -997,7 +1004,7 @@ javascript:location.href = 'org-protocol://capture?template=l&url=' + encodeURIC
       :leader
       :desc "Capture"         :ni "j" #'org-capture
 
-      (:prefix ("a" . "agenda")
+      (:prefix ("d" . "agenda")
        :desc "Agenda (Log)"    :ni "a" (cmd! (find-file-noselect (org-file "todo.org"))
                                              (org-agenda nil "a")
                                              (org-agenda-archives-mode t)
@@ -1219,21 +1226,22 @@ roam-block seems interesting as well.
   )
 #+end_src
 **** Keybindings
+
 #+name: org-roam-map
 #+begin_src elisp :tangle no
 <<org-roam-map-custom-fn>>
 (map! :map org-roam-mode-map
       :leader
-      (:prefix ("d" . "org-roam-dailies")
-       :desc "Find Yesterday"                   :ni  "y"        #'org-roam-dailies-find-yesterday
-       :desc "Find Today"                       :ni  "j"        #'org-roam-dailies-find-today
-       :desc "Find Tomorrow"                    :ni  "k"        #'org-roam-dailies-find-tomorrow
-       :desc "Find Date"                        :ni  "d"        #'org-roam-dailies-find-date
+      ;; (:prefix ("d" . "org-roam-dailies")
+      ;;  :desc "Find Yesterday"                   :ni  "y"        #'org-roam-dailies-find-yesterday
+      ;;  :desc "Find Today"                       :ni  "j"        #'org-roam-dailies-find-today
+      ;;  :desc "Find Tomorrow"                    :ni  "k"        #'org-roam-dailies-find-tomorrow
+      ;;  :desc "Find Date"                        :ni  "d"        #'org-roam-dailies-find-date
 
-       :desc "Capture Yesterday"                :ni  "Y"        #'org-roam-dailies-capture-yesterday
-       :desc "Capture Today"                    :ni  "i"        #'org-roam-dailies-capture-today
-       :desc "Capture Tomorrow"                 :ni  "I"        #'org-roam-dailies-capture-tomorrow
-       :desc "Capture Date"                     :ni  "D"        #'org-roam-dailies-capture-date)
+      ;;  :desc "Capture Yesterday"                :ni  "Y"        #'org-roam-dailies-capture-yesterday
+      ;;  :desc "Capture Today"                    :ni  "i"        #'org-roam-dailies-capture-today
+      ;;  :desc "Capture Tomorrow"                 :ni  "I"        #'org-roam-dailies-capture-tomorrow
+      ;;  :desc "Capture Date"                     :ni  "D"        #'org-roam-dailies-capture-date)
 
       (:prefix ("r" . "org-roam")
        :desc "Buffer"                           :ni  "<tab>"    #'org-roam-buffer-toggle
@@ -1250,7 +1258,7 @@ roam-block seems interesting as well.
        :desc "Find Literature Note"             :nvi "b"        (cmd! (let ((ivy-bibtex-default-action 'ivy-bibtex-edit-notes)) (ivy-bibtex)))
        :desc "ORB Note Actions"                 :ni  "B"        #'orb-note-actions
        :desc "Open PDF"                         :ni  "p"        (cmd! (let ((ivy-bibtex-default-action 'ivy-bibtex-open-pdf)) (ivy-bibtex)))
-       :desc "Insert Citation"                  :ni  "I"        #'org-ref-cite-insert-ivy
+       :desc "Insert Citation"                  :ni  "I"        #'citar-insert-citation
 
        ;; (:prefix ("t" . "Transclusion")
        ;;  :desc "Transclude"                      :ni  "t"        #'org-transclusion-link-open-at-point
@@ -1336,7 +1344,7 @@ Custom functions that are bound to ~org-roam-mode-map~:
 ;(set-face-attribute 'org-roam-link-invalid nil :foreground 'unspecified :background "#592e33" :underline "#BF616A" :inherit 'unspecified)
 ;(set-face-attribute 'org-roam-link-shielded nil :foreground 'unspecified :background "#736344" :underline "#EBCB8B" :inherit 'unspecified)
 
-(require 'org-ref)
+;;(require 'org-ref)
 ;;(set-face-attribute 'org-ref-cite-face nil :foreground 'unspecified :background "#736344" :underline "#EBCB8B" :inherit 'unspecified)
 #+end_src
 **** Capture Templates
@@ -1508,7 +1516,7 @@ Time/date utilities (borrowed from [[https://emacs.stackexchange.com/questions/4
             (format-time-string "%F Sun" (current-week-end))
             "]")))
 #+end_src
-**** Note-taking
+**** Bibliography
 =org-roam-bibtex= enables bibliographical notes (see [[file:template/orb-ref.org][note template]]).
 #+begin_src emacs-lisp :tangle yes
 (use-package! org-roam-bibtex
@@ -1524,10 +1532,37 @@ Time/date utilities (borrowed from [[https://emacs.stackexchange.com/questions/4
   ;;   (orb-make-notes-cache))
   )
 #+end_src
+=citar=:
+#+begin_src emacs-lisp :tangle yes
+(use-package! citar
+  :config
+  (setq citar-bibliography (org-file "library.bib")
+        ;; org-cite-global-bibliography `(,(org-file "library.bib"))
+        ;; org-cite-insert-processor 'citar
+        ;; org-cite-follow-processor 'citar
+        ;; org-cite-activate-processor 'citar
+        )
+  (setq citar-symbols
+        `((file ,(all-the-icons-faicon "file-o" :face 'all-the-icons-green :v-adjust -0.1) . " ")
+          (note ,(all-the-icons-material "speaker_notes" :face 'all-the-icons-blue :v-adjust -0.3) . " ")
+          (link ,(all-the-icons-octicon "link" :face 'all-the-icons-orange :v-adjust 0.01) . " ")))
+  (setq citar-symbol-separator " ")
+  )
+        #+end_src
 
+Open PDFs with Zathura.
+#+begin_src emacs-lisp :tangle yes
+(setq bibtex-completion-pdf-open-function
+      (lambda (file)
+        (shell-command (concat "zathura "
+                               (shell-quote-argument file)
+                               " &>/dev/null &disown"))))
+#+end_src
+**** Bibliography (old)
 =ivy-bibtex= allows me to search notes & PDF in the bibliography.
 #+begin_src emacs-lisp :tangle yes
 (use-package! ivy-bibtex
+  :disabled
   :config
   (ivy-set-actions
    'ivy-bibtex
@@ -1545,6 +1580,7 @@ Time/date utilities (borrowed from [[https://emacs.stackexchange.com/questions/4
 =org-ref= processes the bibliography file generated by Zotero.
 #+begin_src emacs-lisp :tangle yes
 (use-package! org-ref
+  :disabled
   :after org-roam
   :init
   (setq org-ref-pdf-directory "~/.zot/storage"
@@ -1570,15 +1606,6 @@ Time/date utilities (borrowed from [[https://emacs.stackexchange.com/questions/4
         org-noter-hide-other nil
         org-noter-notes-search-path org-directory))
 #+end_src
-
-Open PDFs with Zathura.
-#+begin_src emacs-lisp :tangle yes
-(setq bibtex-completion-pdf-open-function
-      (lambda (file)
-        (shell-command (concat "zathura "
-                               (shell-quote-argument file)
-                               " &>/dev/null &disown"))))
-#+end_src
 **** Bloging
 Put this in =org-roam-directory/.dir-locals.el= to auto-export files that has the blog tag on save
 #+begin_src emacs-lisp :tangle no
@@ -1602,7 +1629,7 @@ Put this in =org-roam-directory/.dir-locals.el= to auto-export files that has th
         org-roam-ui-update-on-save t
         org-roam-ui-open-on-start t))
 ;; have to do it manually
-(org-roam-ui-mode)
+;;(org-roam-ui-mode)
 #+end_src
 **** TODO Delve
 #+begin_src emacs-lisp :tangle yes
