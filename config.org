@@ -641,8 +641,6 @@ Faces for my custom TODO keywords
                                ("[?]"  . +org-todo-onhold)
                                ("WAIT" . +org-todo-onhold)
                                ("EVNT" . "#21bcbf")
-                               ("MAYB" . "#f06292")
-                               ("REWD" . "#ac8476")
                                ("HOLD" . +org-todo-onhold)
                                ("PROJ" . "#7e57c2")))
 #+end_src
@@ -760,28 +758,18 @@ I assign an empty keymap to =org-super-agenda-header-map= so that I can use j/k 
       org-pomodoro-short-break-sound-args "-v 0.7"
       org-archive-location (f-join org-directory "archive" "%s_archive::")
       org-depend-find-next-options "no-wrap,todo-only,priority-up"
+      org-clock-in-switch-to-state "STRT"
       org-refile-targets
       `((,(org-file "todo.org") :maxlevel . 1)
         (,(org-file "todo.org") :todo . "PROJ")
         )
       org-todo-keywords
-      '((sequence "IDEA(i)" "STRT(s)" "NEXT(n)" "TODO(t)" "PROJ(p)" "EVNT(e)" "MAYB(m)" "WAIT(w)" "HOLD(h)" "REWD(r)" "|" "DONE(d)" "KILL(k)")
+      '((sequence "IDEA(i)" "STRT(s)" "NEXT(n)" "TODO(t)" "PROJ(p)" "EVNT(e)" "WAIT(w)" "HOLD(h)" "|" "DONE(d)" "KILL(k)")
         (sequence "[ ](T)" "[-](S)" "[?](W)" "|" "[X](D)")
         (sequence "|" "OKAY(o)" "YES(y)" "NO(n)"))
       org-agenda-files
-      (append `(,(org-file "todo.org")
-                ,(org-file "cal.org")
-                ,(org-file "gcal.org")
-                ,(org-file "habits.org"))
-              (org-file-glob "??????????????-project-*.org")
-              (org-file-glob "proj-*.org")
-              (org-file-glob "area-*.org")))
+      (append `(,(org-file "todo.org"))))
 
-(defun org-clock-in-switch-to-state (state)
-  (unless (or (string= state "REWD")
-              (string= state "EVNT"))
-    (setq state "STRT")
-    state))
 #+end_src
 ***** Groups
 #+name: agenda-groups
