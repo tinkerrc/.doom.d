@@ -10,12 +10,3 @@
 - status ::
 - author ::
 
-* Review
-* Notes
-:PROPERTIES:
-:CUSTOM_ID: ${=key=}
-:URL: ${url}
-:AUTHOR: ${author-or-editor}
-:NOTER_DOCUMENT: %(orb-process-file-field \"${=key=}\")
-:NOTER_PAGE:
-:END:

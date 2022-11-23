@@ -399,9 +399,9 @@ I find it to be more ergonomic than =SPC b S=
       :desc "Fish shell config"         :ni "f c"       (cmd! (find-file "~/.config/fish/config.fish"))
       :desc "Fish shell vars"           :ni "f v"       (cmd! (find-file "~/.config/fish/vars.fish"))
       :desc "Fish shell aliases"        :ni "f a"       (cmd! (find-file "~/.config/fish/aliases.fish"))
-      :desc "Fish shell functions"      :ni "f f"       (cmd! (counsel-find-file "~/.config/fish/functions/"))
-      :desc "Oh My Fish"                :ni "o"         (cmd! (counsel-find-file "~/.config/omf"))
-      :desc "dot config"                :ni "e"         (cmd! (counsel-find-file "~/.config/")))
+      :desc "Fish shell functions"      :ni "f f"       (cmd! (consult-find "~/.config/fish/functions/"))
+      :desc "Oh My Fish"                :ni "o"         (cmd! (consult-find "~/.config/omf"))
+      :desc "dot config"                :ni "e"         (cmd! (consult-find "~/.config/")))
 #+end_src
 ** Quick Calc
 #+begin_src emacs-lisp :tangle yes
@@ -432,9 +432,9 @@ Make it more vim-like
 #+begin_src emacs-lisp :tangle yes
 (setq evil-vsplit-window-right t
       evil-split-window-below t)
-(defadvice! prompt-for-buffer (&rest _)
-  :after '(evil-window-split evil-window-vsplit)
-  (+ivy/switch-buffer))
+;; (defadvice! prompt-for-buffer (&rest _)
+;;   :after '(evil-window-split evil-window-vsplit)
+;;   (+ivy/switch-buffer))
 #+end_src
 ** Start Server
 #+begin_src emacs-lisp :tangle yes
@@ -443,10 +443,11 @@ Make it more vim-like
 * Appearance
 ** Fonts
 - Note: Fira Code seems to improve scrolling performance, but its ligatures messes Org mode up, so I'm staying with DejaVu. I use the Nerd Font variant with vterm since the vanilla one doesn't have icons.
-- I use a large font size because of my Hi-DPI screen.
-- If unicode symbols aren't working properly, install Symbola. (Arch: ~yay -S otf-symbola~)
+- If unicode symbols aren't working properly, install Symbola. (Arch: ~paru -S otf-symbola~)
 #+begin_src emacs-lisp :tangle yes
 (setq doom-font (font-spec :name "DejaVuSansMono Nerd Font Mono" :size 15))
+(setq doom-unicode-font (font-spec :family "Hiragino Sans GB" :size 18))
+
 (set-face-background 'cursor "#9ac0e6")
 (add-hook 'vterm-mode-hook
           (lambda ()
@@ -460,7 +461,7 @@ I had to load the theme here so that I can override certain faces later.
 #+begin_src emacs-lisp :tangle yes
 (setq doom-theme 'doom-nord
       doom-themes-treemacs-theme "doom-colors")
-(load-theme doom-theme t)
+(load-theme doom-theme t) ;; required for colorscheme adjustments in later config sections
 #+end_src
 ** Modeline
 #+begin_src emacs-lisp :tangle yes
@@ -1252,12 +1253,12 @@ roam-block seems interesting as well.
        :desc "Go to habits"                     :ni  "h"        (find-org-file! "habits.org")
 
        :desc "Insert Link"                      :nvi "i"        #'org-roam-node-insert
-       :desc "Insert Link to Headline"          :ni  "l"        #'my/org-insert-link-to-headline
+       ;; :desc "Insert Link to Headline"          :ni  "l"        #'my/org-insert-link-to-headline
        :desc "Rebuild cache"                    :ni  "C"        #'org-roam-db-sync
 
-       :desc "Find Literature Note"             :nvi "b"        (cmd! (let ((ivy-bibtex-default-action 'ivy-bibtex-edit-notes)) (ivy-bibtex)))
+       :desc "Find Literature Note"             :nvi "b"        #'citar-open-notes
        :desc "ORB Note Actions"                 :ni  "B"        #'orb-note-actions
-       :desc "Open PDF"                         :ni  "p"        (cmd! (let ((ivy-bibtex-default-action 'ivy-bibtex-open-pdf)) (ivy-bibtex)))
+       :desc "Open PDF"                         :ni  "p"        #'citar-open-files
        :desc "Insert Citation"                  :ni  "I"        #'citar-insert-citation
 
        ;; (:prefix ("t" . "Transclusion")
@@ -1291,7 +1292,7 @@ roam-block seems interesting as well.
 
        :desc "Jump to Dashboard"                :ni  "j"        (find-org-file! "todo.org")
        :desc "Jump to Private Index"            :ni  "J"        (find-org-file! "priv.org.gpg")
-       :desc "Find File"                        :ni  "."        (cmd! (counsel-find-file org-directory))
+       :desc "Find File"                        :ni  "."        (cmd! (consult-find org-directory))
        ))
 #+end_src
 
@@ -1304,15 +1305,16 @@ Custom functions that are bound to ~org-roam-mode-map~:
   (let ((current-prefix-arg '(16)))
     (call-interactively 'org-latex-preview)))
 
-(defun my/org-insert-link-to-headline ()
-  "Insert link to a heading with completion."
-  (interactive)
-  (let ((settings (cdr (assq major-mode counsel-outline-settings))))
-    (ivy-read "Target: " (counsel-outline-candidates settings)
-              :action #'my/org--insert-link-headline-action
-              :history 'my/org-link-headline-history
-              :preselect (max (1- counsel-outline--preselect) 0)
-              :caller 'my/org-insert-link-to-headline)))
+;; TODO: implement for vertico
+;; (defun my/org-insert-link-to-headline ()
+;;   "Insert link to a heading with completion."
+;;   (interactive)
+;;   (let ((settings (cdr (assq major-mode counsel-outline-settings))))
+;;     (ivy-read "Target: " (counsel-outline-candidates settings)
+;;               :action #'my/org--insert-link-headline-action
+;;               :history 'my/org-link-headline-history
+;;               :preselect (max (1- counsel-outline--preselect) 0)
+;;               :caller 'my/org-insert-link-to-headline)))
 
 (defun my/org--insert-link-headline-action (x)
   "Insert link for `my/org-insert-link-to-headline'"
@@ -1532,6 +1534,7 @@ Time/date utilities (borrowed from [[https://emacs.stackexchange.com/questions/4
   ;;   (orb-make-notes-cache))
   )
 #+end_src
+
 =citar=:
 #+begin_src emacs-lisp :tangle yes
 (use-package! citar
@@ -1549,6 +1552,14 @@ Time/date utilities (borrowed from [[https://emacs.stackexchange.com/questions/4
   (setq citar-symbol-separator " ")
   )
         #+end_src
+
+=citar-org-roam=:
+#+begin_src emacs-lisp :tangle yes
+(use-package! citar-org-roam
+  :config
+  (setq citar-org-roam-subdir nil
+        citar-org-roam-note-title-template "${title} (${author editor})\n#+setupfile: ./setup.org\n#+filetags: :ref:\n\n- category ::\n- context ::\n- status ::\n- author ::\n\n"))
+#+end_src
 
 Open PDFs with Zathura.
 #+begin_src emacs-lisp :tangle yes
