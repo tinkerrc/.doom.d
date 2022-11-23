@@ -399,9 +399,9 @@ I find it to be more ergonomic than =SPC b S=
       :desc "Fish shell config"         :ni "f c"       (cmd! (find-file "~/.config/fish/config.fish"))
       :desc "Fish shell vars"           :ni "f v"       (cmd! (find-file "~/.config/fish/vars.fish"))
       :desc "Fish shell aliases"        :ni "f a"       (cmd! (find-file "~/.config/fish/aliases.fish"))
-      :desc "Fish shell functions"      :ni "f f"       (cmd! (consult-find "~/.config/fish/functions/"))
-      :desc "Oh My Fish"                :ni "o"         (cmd! (consult-find "~/.config/omf"))
-      :desc "dot config"                :ni "e"         (cmd! (consult-find "~/.config/")))
+      :desc "Fish shell functions"      :ni "f f"       (cmd! (+vertico/find-file-in "~/.config/fish/functions/"))
+      :desc "Oh My Fish"                :ni "o"         (cmd! (+vertico/find-file-in "~/.config/omf"))
+      :desc "dot config"                :ni "e"         (cmd! (+vertico/find-file-in "~/.config/")))
 #+end_src
 ** Quick Calc
 #+begin_src emacs-lisp :tangle yes
@@ -1280,7 +1280,7 @@ roam-block seems interesting as well.
 
        :desc "Jump to Dashboard"                :ni  "j"        (find-org-file! "todo.org")
        :desc "Jump to Private Index"            :ni  "J"        (find-org-file! "priv.org.gpg")
-       :desc "Find File"                        :ni  "."        (cmd! (consult-find org-directory))
+       :desc "Find File"                        :ni  "."        (cmd! (+vertico/find-file-in org-directory))
        ))
 #+end_src
 
