@@ -9,7 +9,8 @@
         (goto-char
          (point-min))
         (re-search-forward "#\\+roam_tags:.*blog" nil t))
-      (org-hugo-auto-export-mode)))))
+      (org-hugo-auto-export-mode))))
+ '(warning-suppress-types '((:warning) (:warning) (defvaralias))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
