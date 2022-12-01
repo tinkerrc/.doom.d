@@ -446,7 +446,7 @@ Make it more vim-like
 - If unicode symbols aren't working properly, install Symbola. (Arch: ~paru -S otf-symbola~)
 #+begin_src emacs-lisp :tangle yes
 (setq doom-font (font-spec :name "DejaVuSansMono Nerd Font Mono" :size 34))
-(setq doom-unicode-font (font-spec :family "Hiragino Sans GB" :size 18))
+(setq doom-unicode-font (font-spec :family "Hiragino Sans GB" :size 34))
 
 (set-face-background 'cursor "#9ac0e6")
 (add-hook 'vterm-mode-hook
