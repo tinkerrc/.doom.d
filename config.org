@@ -538,6 +538,8 @@ I wish all special buffers could use square brackets instead of asterisks.
     (file-expand-wildcards (org-file expr)))
   (defmacro find-org-file! (file)
     `(lambda () (interactive) (find-file ,(org-file file))))
+  (setq cdlatex-math-modify-alist '((?\" "\\mathbb" nil t nil nil)
+                                    (?t "\\text" nil t nil nil)))
   <<org-hooks>>
 
   :config
@@ -779,7 +781,7 @@ I assign an empty keymap to =org-super-agenda-header-map= so that I can use j/k 
       ; past scheduled tasks apear in Today section
       '((:discard (:tag "leisure" :scheduled t))
         (:name "In Progress"
-         :todo "STRT")
+         :todo ("STRT" "WAIT"))
         (:name "Inbox"
          :todo "IDEA"
          :tag "inbox")
