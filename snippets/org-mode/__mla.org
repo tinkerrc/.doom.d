@@ -1,4 +1,6 @@
 #+options: toc:nil
+#+options: title:nil author:nil date:nil toc:nil
+#+startup: num
 #+cite_export: biblatex mla
 #+latex_class_options: [12pt,letterpaper]
 #+latex_header: \usepackage{mla}
