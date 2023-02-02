@@ -745,8 +745,9 @@ I assign an empty keymap to =org-super-agenda-header-map= so that I can use j/k 
       org-agenda-show-future-repeats nil
       org-agenda-skip-deadline-if-done t
       org-agenda-skip-scheduled-if-done t
-      org-agenda-skip-scheduled-if-deadline-is-shown nil
-      org-agenda-skip-deadline-prewarning-if-scheduled t
+      org-agenda-skip-scheduled-if-deadline-is-shown t
+      org-agenda-skip-deadline-prewarning-if-scheduled nil
+      org-deadline-warning-days 10
       org-agenda-start-day "0d"
       org-agenda-start-on-weekday 1
       org-agenda-start-with-log-mode t
@@ -827,7 +828,8 @@ I assign an empty keymap to =org-super-agenda-header-map= so that I can use j/k 
                            :habit t)
                           (:name "Today"
                            :scheduled t)
-                          (:discard (:anything t))))))
+                          ;;(:discard (:anything t))
+                          ))))
           (alltodo "" ((org-agenda-overriding-header "")
                        (org-agenda-dim-blocked-tasks 'invisible)
                        (org-agenda-sorting-strategy
