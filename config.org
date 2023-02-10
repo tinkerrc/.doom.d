@@ -538,6 +538,8 @@ I wish all special buffers could use square brackets instead of asterisks.
     (file-expand-wildcards (org-file expr)))
   (defmacro find-org-file! (file)
     `(lambda () (interactive) (find-file ,(org-file file))))
+  (setq cdlatex-math-modify-alist '((?\" "\\mathbb" nil t nil nil)
+                                    (?t "\\text" nil t nil nil)))
   <<org-hooks>>
 
   :config
@@ -553,7 +555,7 @@ I wish all special buffers could use square brackets instead of asterisks.
   <<org-faces>>
   )
 #+end_src
-**** Hooks & Advices
+**** Hooks & Advice
 #+name: org-hooks
 #+begin_src elisp :tangle no
 ;; org dwim for ivy 'cite:' links
@@ -743,8 +745,9 @@ I assign an empty keymap to =org-super-agenda-header-map= so that I can use j/k 
       org-agenda-show-future-repeats nil
       org-agenda-skip-deadline-if-done t
       org-agenda-skip-scheduled-if-done t
-      org-agenda-skip-scheduled-if-deadline-is-shown nil
-      org-agenda-skip-deadline-prewarning-if-scheduled t
+      org-agenda-skip-scheduled-if-deadline-is-shown t
+      org-agenda-skip-deadline-prewarning-if-scheduled nil
+      org-deadline-warning-days 5
       org-agenda-start-day "0d"
       org-agenda-start-on-weekday 1
       org-agenda-start-with-log-mode t
@@ -779,9 +782,8 @@ I assign an empty keymap to =org-super-agenda-header-map= so that I can use j/k 
       ; past scheduled tasks apear in Today section
       '((:discard (:tag "leisure" :scheduled t))
         (:name "In Progress"
-         :todo "STRT")
+         :todo ("STRT" "WAIT" "HOLD"))
         (:name "Inbox"
-         :todo "IDEA"
          :tag "inbox")
         (:name "Academic"
          :and (:not (:todo ("PROJ" "TODO"))
@@ -817,7 +819,7 @@ I assign an empty keymap to =org-super-agenda-header-map= so that I can use j/k 
                                                ;; "" "················"))
                                                "      " "----------------"))
                        (org-agenda-sorting-strategy
-                        '(time-up todo-state-up priority-down category-keep))
+                        '(time-up priority-down todo-state-up category-keep))
                        (org-super-agenda-groups
                         '((:name none
                            :time-grid t)
@@ -825,17 +827,20 @@ I assign an empty keymap to =org-super-agenda-header-map= so that I can use j/k 
                            :habit t)
                           (:name "Today"
                            :scheduled t)
-                          (:discard (:anything t))))))
+                          (:name "Due"
+                           :deadline t)
+                          ;;(:discard (:anything t))
+                          ))))
           (alltodo "" ((org-agenda-overriding-header "")
                        (org-agenda-dim-blocked-tasks 'invisible)
-                       (org-agenda-sorting-strategy
-                        '(todo-state-up priority-down deadline-up category-keep))
                        (org-super-agenda-groups my/todo-agenda-groups)))))
 
         ("D" "Upcoming deadlines" agenda ""
          ((org-agenda-archives-mode nil)
           (org-deadline-warning-days 365)
           (org-agenda-use-time-grid nil)
+          (org-agenda-sorting-strategy
+           '(deadline-up todo-state-up priority-down category-keep))
           (org-agenda-entry-types '(:deadline))))
 
         ("h" "Habits"
@@ -1137,7 +1142,9 @@ Source: [[https://ivanaf.com/animating_gifs_in_orgmode.html][Animating gifs in o
 (use-package! org-fancy-priorities
   :hook (org-mode . org-fancy-priorities-mode)
   :config
-  (setq org-fancy-priorities-list '("⇈" "▲" "◆" "▼")))
+  ;(setq org-fancy-priorities-list '("⇈" "▲" "◆" "▼"))
+  (setq org-fancy-priorities-list '("▲" "▲" "◆" "▼"))
+  )
 #+end_src
 **** Package: Org Download
 #+begin_src emacs-lisp :tangle yes
@@ -1221,16 +1228,6 @@ roam-block seems interesting as well.
 <<org-roam-map-custom-fn>>
 (map! :map org-roam-mode-map
       :leader
-      ;; (:prefix ("d" . "org-roam-dailies")
-      ;;  :desc "Find Yesterday"                   :ni  "y"        #'org-roam-dailies-find-yesterday
-      ;;  :desc "Find Today"                       :ni  "j"        #'org-roam-dailies-find-today
-      ;;  :desc "Find Tomorrow"                    :ni  "k"        #'org-roam-dailies-find-tomorrow
-      ;;  :desc "Find Date"                        :ni  "d"        #'org-roam-dailies-find-date
-
-      ;;  :desc "Capture Yesterday"                :ni  "Y"        #'org-roam-dailies-capture-yesterday
-      ;;  :desc "Capture Today"                    :ni  "i"        #'org-roam-dailies-capture-today
-      ;;  :desc "Capture Tomorrow"                 :ni  "I"        #'org-roam-dailies-capture-tomorrow
-      ;;  :desc "Capture Date"                     :ni  "D"        #'org-roam-dailies-capture-date)
 
       (:prefix ("r" . "org-roam")
        :desc "Buffer"                           :ni  "<tab>"    #'org-roam-buffer-toggle
@@ -1248,6 +1245,18 @@ roam-block seems interesting as well.
        :desc "ORB Note Actions"                 :ni  "B"        #'orb-note-actions
        :desc "Open PDF"                         :ni  "p"        #'citar-open-files
        :desc "Insert Citation"                  :ni  "I"        #'citar-insert-citation
+
+
+       (:prefix ("d" . "org-roam-dailies")
+        :desc "Find Yesterday"                   :ni  "y"        #'org-roam-dailies-goto-yesterday
+        :desc "Find Today"                       :ni  "j"        #'org-roam-dailies-goto-today
+        :desc "Find Tomorrow"                    :ni  "k"        #'org-roam-dailies-goto-tomorrow
+        :desc "Find Date"                        :ni  "d"        #'org-roam-dailies-goto-date
+
+        :desc "Capture Yesterday"                :ni  "Y"        #'org-roam-dailies-capture-yesterday
+        :desc "Capture Today"                    :ni  "i"        #'org-roam-dailies-capture-today
+        :desc "Capture Tomorrow"                 :ni  "I"        #'org-roam-dailies-capture-tomorrow
+        :desc "Capture Date"                     :ni  "D"        #'org-roam-dailies-capture-date)
 
        ;; (:prefix ("t" . "Transclusion")
        ;;  :desc "Transclude"                      :ni  "t"        #'org-transclusion-link-open-at-point
@@ -1268,10 +1277,10 @@ roam-block seems interesting as well.
        :desc "Delve"                            :ni  ";"        #'delve-open-or-select
        :desc "Org Analyzer"                     :ni  "="        (cmd! (org-analyzer-start))
 
-       :desc "Add tag"                          :ni  "a t"      #'org-roam-tag-add
-       :desc "Delete tag"                       :ni  "d t"      #'org-roam-tag-delete
-       :desc "Add alias"                        :ni  "a a"      #'org-roam-alias-add
-       :desc "Delete alias"                     :ni  "d a"      #'org-roam-alias-delete
+       :desc "Add tag"                          :ni  "t"      #'org-roam-tag-add
+       :desc "Delete tag"                       :ni  "T"      #'org-roam-tag-delete
+       :desc "Add alias"                        :ni  "a"      #'org-roam-alias-add
+       :desc "Delete alias"                     :ni  "A"      #'org-roam-alias-delete
 
        :desc "Clear GnuPG Password Cache"       :ni  "'"        (cmd! (shell-command "gpgpc"))
        :desc "reset GPG TTY / X Display"        :ni  "\""       (cmd! (shell-command "gpgut"))
@@ -1345,7 +1354,7 @@ Custom functions that are bound to ~org-roam-mode-map~:
 ; TODO: adapt to org-roam v2
 (setq org-roam-capture-templates
       `(,(make-roam-template "Default" :tags "" :key "d")
-        ,(make-roam-template "Concept" :after "* Definition: ${title}\n%?" :setup "./setup-concept.org")
+        ,(make-roam-template "Concept" :after "* Definition\n%?" :setup "./setup-concept.org")
         ,(make-roam-template "Person" :after "* Biography: ${title}\n%?")
         ("r" "Reference" plain "%?"
          :target (file+head "%<%Y%m%d%H%M%S>-${=key=}.org" ,(get-org-template "orb-ref"))
@@ -1355,60 +1364,36 @@ Custom functions that are bound to ~org-roam-mode-map~:
       org-roam-capture-immediate-template
       (make-roam-template "default" :tags "" :after "%?" :finish t)
       org-roam-dailies-capture-templates
-      `(("j" "Journal" entry #'org-roam-capture--get-point
-         "* %?"
-         :file-name "daily/%<%Y-%m-%d>"
-         :head ,(get-org-template "org-roam-daily-head")
-         :olp ("Journal"))
+      `(("j" "Journal" entry "* %?"
+         :target (file+head+olp "%<%Y-%m-%d>.org" ,(get-org-template "org-roam-daily-head") ("Journal")))
 
-        ("b" "Braindump" entry #'org-roam-capture--get-point
-         "* [[roam:Braindump]] %<%Y-%m-%d %H:%M>\n- %?"
-         :file-name "daily/%<%Y-%m-%d>"
-         :head ,(get-org-template "org-roam-daily-head"))
+        ("b" "Braindump" entry "* Braindump %<%Y-%m-%d %H:%M>\n- %?"
+         :target (file+head "%<%Y-%m-%d>.org" ,(get-org-template "org-roam-daily-head")))
 
-        ("p" "Plan" item #'org-roam-capture--get-point
-         "- %?"
-         :file-name "daily/%<%Y-%m-%d>"
-         :head ,(get-org-template "org-roam-daily-head")
-         :olp ("Daily Plan"))
+        ("p" "Plan" item "- %?"
+         :target (file+head+olp "%<%Y-%m-%d>.org" ,(get-org-template "org-roam-daily-head") ("Daily Plan")))
 
-        ("l" "Log" item #'org-roam-capture--get-point
-         "- (%<%H:%M>) %?"
-         :file-name "daily/%<%Y-%m-%d>"
-         :head ,(get-org-template "org-roam-daily-head")
-         :olp ("Logs"))
+        ("l" "Log" item "- (%<%H:%M>) %?"
+         :target (file+head+olp "%<%Y-%m-%d>.org" ,(get-org-template "org-roam-daily-head") ("Logs")))
 
-        ("n" "New Note" entry #'org-roam-capture--get-point
-         "* Notes on %^{Topic} | [[roam:To-Refile]]\n%?"
-         :file-name "daily/%<%Y-%m-%d>"
-         :head ,(get-org-template "org-roam-daily-head"))
-
-        ("W" "Weekly Review" entry #'org-roam-capture--get-point
-         ,(concat-nl "* [[roam:Weekly Review]] for %(format-time-string \"Week %V of %Y\") (%(org-current-week-range))"
-                     "- [ ] [[roam:Braindump]]"
-                     "  Capture everything on your mind. Create new tasks when appropriate"
+        ("W" "Weekly Review" entry ,(concat-nl "* Weekly Review for %(format-time-string \"Week %V of %Y\") (%(org-current-week-range))"
+                     "- Braindump"
+                     "  What's on your mind?"
                      "  - %?"
                      "- Checklist"
-                     "  - [ ] Review agenda; schedule & prune tasks"
-                     "  - [ ] Review org-roam states (To-Read, To-Review, etc)"
-                     "  - [ ] Review org-roam projects"
+                     "  - [ ] Review agenda; (re)schedule & prune tasks"
+                     "  - [ ] Review projects & progress"
                      "  - [ ] Review habit graph"
                      "- What went well?"
                      "- What sucked?"
-                     "- How can I improve next week?"
-                     )
-         :file-name "daily/%<%Y-%m-%d>"
-         :head ,(get-org-template "org-roam-daily-head"))
+                     "- What's the plan for next week?")
+         :target (file+head "%<%Y-%m-%d>.org" ,(get-org-template "org-roam-daily-head")))
 
-        ("M" "Monthly Review" entry #'org-roam-capture--get-point
-         "* [[roam:Monthly Review]] for %(format-time-string \"%B of %Y\")\n%?"
-         :file-name "daily/%<%Y-%m-%d>"
-         :head ,(get-org-template "org-roam-daily-head"))
+        ("M" "Monthly Review" entry "* Monthly Review for %(format-time-string \"%B of %Y\")\n%?"
+         :target (file+head "%<%Y-%m>.org" ,(get-org-template "org-roam-daily-head")))
 
-        ("Y" "Yearly Review" entry #'org-roam-capture--get-point
-         "* [[roam:Yearly Review]] for %(format-time-string \"%Y\")\n%?"
-         :file-name "daily/%<%Y-%m-%d>"
-         :head ,(get-org-template "org-roam-daily-head"))))
+        ("Y" "Yearly Review" entry "* Yearly Review for %(format-time-string \"%Y\")\n%?"
+         :target (file+head "%<%Y>.org" ,(get-org-template "org-roam-daily-head")))))
 #+end_src
 
 Helper function for template creation
@@ -1453,8 +1438,8 @@ Helper function for template creation
         (setq head (concat head
                            "- category :: " (make-roam-links cats) "\n"
                            "- context :: " (make-roam-links context) "\n"
-                           "- sources :: \n"
-                           "- status :: " (make-roam-links status) "\n"
+                           ;; "- sources :: \n"
+                           ;; "- status :: " (make-roam-links status) "\n"
                            "\n"))))
   `(,key ,desc plain ,after
          :target (file+head ,fn ,head)
