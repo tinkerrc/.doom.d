@@ -754,6 +754,7 @@ I assign an empty keymap to =org-super-agenda-header-map= so that I can use j/k 
       org-clock-persist t
       org-log-done 'time
       org-log-into-drawer t
+      org-pomodoro-length 45
       org-pomodoro-manual-break t
       org-pomodoro-audio-player "play"
       org-pomodoro-finished-sound-args "-v 0.7"
@@ -1649,7 +1650,8 @@ Put this in =org-roam-directory/.dir-locals.el= to auto-export files that has th
         org-journal-file-header "#+title: Year of %Y\n#+roam_tags: journal\n\n"
         org-journal-date-prefix "* "
         org-journal-file-format "%Y.org"
-        org-journal-time-format "%R - "
+        ;; org-journal-time-format "%R - "
+        org-journal-time-format ""
         org-journal-date-format "%b %d, %a")
   (map! :map org-journal-mode-map
         :leader
